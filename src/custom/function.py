@@ -1,6 +1,7 @@
 from asyncio import sleep
 from random import randint
 from typing import TYPE_CHECKING
+from datetime import datetime
 
 # from time import time
 
@@ -58,7 +59,16 @@ def condition_filter(data: dict) -> bool:
     """
     # if data["ratio"] in ("720p", "540p"):
     #     return False  # 过滤低分辨率的视频作品
+
+    duration_str = data["duration"]
+    duration = datetime.strptime(duration_str, '%H:%M:%S') - datetime.strptime('00:00:00', '%H:%M:%S')
+    print(duration, duration.total_seconds())
+    # 大于三分钟的视频不下载
+    if int(duration.total_seconds()) > 210: 
+        return False
     return True
+    
+    
 
 
 async def suspend(count: int, console: "ColorfulConsole") -> None:
@@ -70,9 +80,9 @@ async def suspend(count: int, console: "ColorfulConsole") -> None:
     说明: 此处的一个数据代表一个账号或者一个合集，并非代表一个数据包
     """
     # 启用该函数
-    batches = 10  # 根据实际需求修改
+    batches = 30  # 根据实际需求修改
     if not count % batches:
-        rest_time = 60 * 5  # 根据实际需求修改
+        rest_time = 60 * 2  # 根据实际需求修改
         console.print(
             f"程序已经处理了 {batches} 个数据，为了避免请求频率过高导致账号或 IP 被风控，程序已经暂停运行，"
             f"将在 {rest_time} 秒后继续处理数据！", )

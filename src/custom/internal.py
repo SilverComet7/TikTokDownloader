@@ -28,7 +28,7 @@ DISCLAIMER_TEXT = (
     "",
 )
 
-RETRY = 5
+RETRY = 3
 TIMEOUT = 10
 
 PHONE_HEADERS = {

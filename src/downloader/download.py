@@ -249,7 +249,21 @@ class Downloader:
         )
         tasks = []
         for item in data:
-            item["desc"] = beautify_string(item["desc"], DESCRIPTION_LENGTH)
+            print(item['desc'])
+            # item["desc"] = beautify_string(item["desc"], DESCRIPTION_LENGTH)
+            # 修改文件的desc  
+             # 1. 删除 # 后面的所有字符
+            # item["desc"] = item["desc"].split('#')[0].strip()
+            
+            # 2. 如果不存在“幻塔”，则在最前面加上【幻塔】
+            # if "幻塔" not in desc:
+            #     desc = "【幻塔】" + desc
+            
+            # 3. 预留修改，“幻塔”之后会被 setting.json 中的 game 字段替换
+            # desc = desc.replace("幻塔", "【{}】".format(item.get("game", "幻塔")))
+            
+            
+            
             name = self.generate_detail_name(item)
             temp_root, actual_root = self.deal_folder_path(root, name, self.folder_mode, )
             params = {
