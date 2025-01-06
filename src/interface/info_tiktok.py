@@ -1,9 +1,9 @@
-from asyncio import run
 from typing import TYPE_CHECKING
 from typing import Union
 
 from src.interface.template import APITikTok
 from src.testers import Params
+from src.translation import _
 
 if TYPE_CHECKING:
     from src.config import Parameter
@@ -24,7 +24,7 @@ class InfoTikTok(APITikTok):
         self.api = f"{self.domain}api/user/detail/"
         self.unique_id = unique_id
         self.sec_user_id = sec_user_id
-        self.text = "账号简略"
+        self.text = _("账号简略")
 
     async def run(self, first=True, *args, **kwargs, ) -> dict | list[dict]:
         self.set_referer()
@@ -38,7 +38,7 @@ class InfoTikTok(APITikTok):
         if d := data_dict.get("userInfo"):
             self.append_response(d)
         else:
-            self.log.warning(f"获取{self.text}失败")
+            self.log.warning(_("获取{text}失败").format(text=self.text))
 
     def append_response(
             self,
@@ -58,15 +58,17 @@ class InfoTikTok(APITikTok):
         }
 
 
-async def main():
-    InfoTikTok.params["device_id"] = ""
+async def test():
     async with Params() as params:
         i = InfoTikTok(
             params,
             unique_id="",
+            sec_user_id="",
         )
         print(await i.run())
 
 
 if __name__ == "__main__":
-    run(main())
+    from asyncio import run
+
+    run(test())

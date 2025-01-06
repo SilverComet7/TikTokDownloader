@@ -64,7 +64,7 @@ class AccountTikTok(Account, APITikTok, ):
             case True:
                 await self.run_single(
                     data_key,
-                    error_text=error_text or f"获取{self.text}失败",
+                    error_text=error_text,
                     cursor=cursor,
                     has_more=has_more,
                     params=params,
@@ -78,7 +78,7 @@ class AccountTikTok(Account, APITikTok, ):
             case False:
                 await self.run_batch(
                     data_key,
-                    error_text=error_text or f"获取{self.text}失败",
+                    error_text=error_text,
                     cursor=cursor,
                     has_more=has_more,
                     params=params,
@@ -106,7 +106,7 @@ class AccountTikTok(Account, APITikTok, ):
                         ):
         await super().run_batch(
             data_key=data_key,
-            error_text=error_text or f"获取{self.text}失败",
+            error_text=error_text,
             cursor=cursor,
             has_more=has_more,
             params=params,
@@ -117,17 +117,6 @@ class AccountTikTok(Account, APITikTok, ):
             *args,
             **kwargs,
         )
-
-    # async def favorite_mode(self):
-    #     if not self.favorite:
-    #         return
-    #     info = Extractor.get_user_info_tiktok(await self.info.run())
-    #     if self.sec_user_id != (s := info.get("sec_uid")):
-    #         self.log.error(
-    #             f"sec_user_id {self.sec_user_id} 与 {s} 不一致")
-    #         self._generate_temp_data()
-    #     else:
-    #         self.response.append({"author": info})
 
     def generate_favorite_params(self) -> dict:
         return self.generate_post_params()
@@ -140,3 +129,19 @@ class AccountTikTok(Account, APITikTok, ):
             "coverFormat": "2",
             "post_item_list_request_type": "0",
         }
+
+
+async def test():
+    async with Params() as params:
+        i = AccountTikTok(
+            params,
+            sec_user_id="",
+            earliest="2024/12/10",
+        )
+        print(await i.run())
+
+
+if __name__ == "__main__":
+    from asyncio import run
+
+    run(test())

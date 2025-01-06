@@ -13,8 +13,7 @@
 <img alt="GitHub all releases" src="https://img.shields.io/github/downloads/JoeanAmier/TikTokDownloader/total?style=for-the-badge&color=52c41a">
 </div>
 <br>
-<p>🔥 <b>TikTok 主页/合辑/直播/视频/图集/原声；抖音主页/视频/图集/收藏/直播/原声/合集/<del>评论</del>/<del>账号</del>/<del>搜索</del>/热榜数据采集工具：</b>完全开源，基于 HTTPX 模块实现的免费工具；批量下载抖音账号发布、喜欢、收藏作品；批量下载 TikTok 账号发布、喜欢作品；下载抖音链接或 TikTok 链接作品；获取抖音直播推流地址；下载抖音直播视频；获取 TikTok 直播推流地址；下载 TikTok 直播视频；<del>采集抖音作品评论数据</del>；批量下载抖音合集作品；批量下载 TikTok 合辑作品；<del>采集抖音账号详细数据</del>；<del>采集抖音用户 / 作品 / 直播搜索结果</del>；采集抖音热榜数据。</p>
-<p>⚠️ 本项目 <code>5.5 Beta</code> 正在重构代码，部分功能可能无法正常使用，建议暂时使用 <code>5.4</code> 版本！</p>
+<p>🔥 <b>TikTok 主页/合辑/直播/视频/图集/原声；抖音主页/视频/图集/收藏/直播/原声/合集/评论/账号/搜索/热榜数据采集工具：</b>完全开源，基于 HTTPX 模块实现的免费工具；批量下载抖音账号发布、喜欢、收藏作品；批量下载 TikTok 账号发布、喜欢作品；下载抖音链接或 TikTok 链接作品；获取抖音直播推流地址；下载抖音直播视频；获取 TikTok 直播推流地址；下载 TikTok 直播视频；采集抖音作品评论数据；批量下载抖音合集作品；批量下载 TikTok 合辑作品；采集抖音账号详细数据；采集抖音用户 / 作品 / 直播搜索结果；采集抖音热榜数据。</p>
 <p>⭐ 本项目完全免费开源，无任何收费功能，请勿上当受骗！</p>
 <hr>
 
@@ -107,7 +106,9 @@
 <li>解压后打开程序文件夹，双击运行 <code>main</code></li>
 </ol>
 <ol><b>配置环境运行</b>
-<li>安装不低于 <code>3.12</code> 版本的 <a href="https://www.python.org/">Python</a> 解释器</li>
+
+[//]: # (<li>安装不低于 <code>3.12</code> 版本的 <a href="https://www.python.org/">Python</a> 解释器</li>)
+<li>安装 <code>3.12</code> 版本的 <a href="https://www.python.org/">Python</a> 解释器</li>
 <li>下载最新的源码或 <a href="https://github.com/JoeanAmier/TikTokDownloader/releases/latest">Releases</a> 发布的源码至本地</li>
 <li>运行 <code>python -m venv venv</code> 命令创建虚拟环境（可选）</li>
 <li>运行 <code>.\venv\Scripts\activate.ps1</code> 或者 <code>venv\Scripts\activate</code> 命令激活虚拟环境（可选）</li>
@@ -180,7 +181,7 @@
 
 > * Cookie 仅需在失效后重新写入配置文件，并非每次运行程序都要写入配置文件！
 >
-> * Cookie 会影响抖音平台下载的视频文件分辨率，如果无法下载 1080P 视频文件，请尝试更新 Cookie！
+> * Cookie 会影响抖音平台下载的视频文件分辨率，如果无法下载高分辨率视频文件，请尝试更新 Cookie！
 >
 > * 程序获取数据失败时，可以尝试更新 Cookie 或者使用已登录的 Cookie！
 
@@ -201,6 +202,7 @@
 <li>当程序请求用户输入内容或链接时，请注意避免输入的内容或链接包含换行符，这可能会导致预期之外的问题</li>
 <li>本项目不会支持付费作品下载，请勿反馈任何关于付费作品下载的问题</li>
 <li>Windows 系统需要以管理员身份运行程序才能读取 Chromium、Chrome、Edge 浏览器 Cookie</li>
+<li>本项目并未针对程序多开的情况进行优化，如需程序多开，请复制整个项目的文件夹，避免出现预期之外的问题</li>
 </ul>
 <hr>
 
@@ -275,15 +277,14 @@
 <img src="docs/赞助商_TikHub_Logo.png" alt="TikHub">
 <p><a href="https://tikhub.io/">TikHub</a> 是一家领先的数据接口服务供应商，专注于提供高质量的数据接口，涵盖了多个热门平台，包括 抖音、TikTok、小红书、Instagram、Twitter 和 快手 等平台。</p>
 <p>TikHub 还提供定制化的服务，如直播间监控、作品监控和达人监控，以满足不同业务场景的需求。</p>
-<p>通过每日签到，用户可以免费获取一定额度的使用量；可以使用我的 <strong>推荐链接</strong>：<a href="https://beta-web.tikhub.io/users/signup?referral_code=X084IATy">https://beta-web.tikhub.io/users/signup?referral_code=X084IATy</a> 或 <strong>推荐码</strong>：<code>X084IATy</code>，注册并充值即可获得 <code>$2</code> 额度！</p>
+<p>通过每日签到，用户可以免费获取一定额度的使用量；可以使用我的 <strong>推荐链接</strong>：<a href="https://user.tikhub.io/users/signup?referral_code=ZrdH8McC">https://user.tikhub.io/users/signup?referral_code=ZrdH8McC</a> 或 <strong>推荐码</strong>：<code>ZrdH8McC</code>，注册并充值即可获得 <code>$2</code> 额度！</p>
 <p><a href="https://tikhub.io/">TikHub</a> 提供以下服务：</p>
 <ul>
 <li>丰富的数据接口</li>
 <li>每日签到免费获取额度</li>
 <li>高质量的 API 服务</li>
 <li>官网：<a href="https://tikhub.io/">https://tikhub.io/</a></li>
-<li>项目地址：<a href="https://github.com/TikHubIO/">https://github.com/TikHubIO/</a></li>
-<li>用户登陆地址：<a href="https://beta-web.tikhub.io/">https://beta-web.tikhub.io/</a></li>
+<li>用户登陆地址：<a href="https://user.tikhub.io/">https://user.tikhub.io/</a></li>
 </ul>
 
 # 💡 项目参考\(Refer\)

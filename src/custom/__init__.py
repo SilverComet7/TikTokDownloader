@@ -1,7 +1,6 @@
 from .function import (
     wait,
     failure_handling,
-    illegal_nickname,
     condition_filter,
     suspend,
     verify_token,
@@ -17,7 +16,6 @@ from .internal import (
     DOCUMENTATION_URL,
     USERAGENT,
     RETRY,
-    DISCLAIMER_TEXT,
     BLANK_PREVIEW,
     TIMEOUT,
     PROJECT_NAME,
@@ -50,7 +48,6 @@ from .internal import (
     SEARCH_AVATAR_INDEX,
     MUSIC_COLLECTION_COVER_INDEX,
     MUSIC_COLLECTION_DOWNLOAD_INDEX,
-    VIDEO_BIT_RATE_INDEX,
 )
 from .static import (
     MAX_WORKERS,

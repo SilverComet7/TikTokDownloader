@@ -15,6 +15,7 @@ from src.custom import USERAGENT
 from src.encrypt.ttWid import TtWid
 from src.encrypt.xBogus import XBogusTikTok
 from src.tools import request_params
+from src.translation import _
 
 if TYPE_CHECKING:
     from src.record import BaseLogger
@@ -110,7 +111,7 @@ class MsToken:
                 **kwargs,
         ):
             return TtWid.extract(logger, response, cls.NAME)
-        logger.error(f"获取 {cls.NAME} 参数失败！")
+        logger.error(_("获取 {name} 参数失败！").format(name=cls.NAME))
 
     @classmethod
     async def get_real_ms_token(
@@ -231,7 +232,7 @@ class MsTokenTikTok(MsToken):
         )
 
 
-async def demo():
+async def test():
     from src.testers import Logger
     print("抖音",
           await MsToken.get_real_ms_token(Logger(), PARAMS_HEADERS, proxy=None))
@@ -244,4 +245,4 @@ async def demo():
 
 
 if __name__ == "__main__":
-    run(demo())
+    run(test())

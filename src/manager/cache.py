@@ -1,13 +1,11 @@
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from src.custom import (
-    ERROR,
-)
-from src.tools import PrivateRetry
+from ..tools import PrivateRetry
+from ..translation import _
 
 if TYPE_CHECKING:
-    from src.config import Parameter
+    from ..config import Parameter
     from .database import Database
 
 __all__ = ["Cache"]
@@ -106,7 +104,7 @@ class Cache:
             mark: str,
     ):
         new_folder = self.root.joinpath(f"{prefix}{id_}_{mark}_{suffix}")
-        self.__rename(old_folder, new_folder, "文件夹")
+        self.__rename(old_folder, new_folder, _("文件夹"), )
         self.log.info(f"文件夹 {old_folder} 已重命名为 {new_folder}", False)
 
     def __rename_works_folder(self,
@@ -119,7 +117,7 @@ class Cache:
         if (s := data[key]) in old_.name:
             new_ = old_.parent / old_.name.replace(
                 s, {"name": name, "mark": mark}[key], 1)
-            self.__rename(old_, new_, "文件夹")
+            self.__rename(old_, new_, _("文件夹"), )
             self.log.info(f"文件夹 {old_} 重命名为 {new_}", False)
             return new_
         return old_
@@ -171,21 +169,22 @@ class Cache:
             field: str):
         new_file = root.joinpath(old_file.name.replace(
             key_words, {"name": name, "mark": mark}[field], 1))
-        self.__rename(old_file, new_file)
+        self.__rename(old_file, new_file, _("文件"), )
         self.log.info(f"文件 {old_file} 重命名为 {new_file}", False)
         return True
 
     @PrivateRetry.retry_limited
-    def __rename(self, old_: Path, new_: Path, type_="文件") -> bool:
+    def __rename(self, old_: Path, new_: Path, type_=_("文件"), ) -> bool:
         try:
             old_.rename(new_)
             return True
         except PermissionError as e:
-            self.console.print(f"{type_}被占用，重命名失败: {e}", style=ERROR)
+            self.console.error(_("{type} {old}被占用，重命名失败: {error}").format(type=type_, old=old_, error=e), )
             return False
         except FileExistsError as e:
-            self.console.print(f"{type_}名称重复，重命名失败: {e}", style=ERROR)
+            self.console.error(_("{type} {new}名称重复，重命名失败: {error}").format(type=type_, new=new_, error=e), )
             return False
         except OSError as e:
-            self.console.print(f"处理{type_}时发生预期之外的错误: {e}", style=ERROR)
+            self.console.error(
+                _("处理{type} {old}时发生预期之外的错误: {error}").format(type=type_, old=old_, error=e), )
             return True

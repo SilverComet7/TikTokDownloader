@@ -1,13 +1,13 @@
-from asyncio import run
 from typing import TYPE_CHECKING
 from typing import Union
 
-from ..interface.comment import Comment, Reply
-from ..interface.template import APITikTok
-from ..testers import Params
+from src.interface.comment import Comment, Reply
+from src.interface.template import APITikTok
+from src.testers import Params
+from src.translation import _
 
 if TYPE_CHECKING:
-    from ..config import Parameter
+    from src.config import Parameter
 
 
 class CommentTikTok(Comment, APITikTok):
@@ -23,6 +23,7 @@ class CommentTikTok(Comment, APITikTok):
                  ):
         super().__init__(params, cookie, proxy, item_id, pages, cursor, count, count_reply)
         self.api = f"{self.domain}api/comment/list/"
+        self.text = _("作品评论")
 
     def generate_params(self, ) -> dict:
         return self.params | {
@@ -73,11 +74,22 @@ class ReplyTikTok(Reply, CommentTikTok, APITikTok):
         }
 
 
-async def main():
+async def test():
     async with Params() as params:
-        c = CommentTikTok(params, item_id="7360156187515456775", )
-        print(await c.run())
+        i = CommentTikTok(
+            params,
+            item_id="",
+        )
+        print(await i.run())
+        i = ReplyTikTok(
+            params,
+            item_id="",
+            comment_id="",
+        )
+        print(await i.run())
 
 
 if __name__ == "__main__":
-    run(main())
+    from asyncio import run
+
+    run(test())
