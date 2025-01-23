@@ -1,5 +1,5 @@
-*.db
-*.json
+# *.db
+# *.json
 *.log
 *.xlsx
 *.csv
@@ -11,3 +11,5 @@ node_modules
 *.png
 *.pyc
 *.mp3
+*.mov
+*.txt
