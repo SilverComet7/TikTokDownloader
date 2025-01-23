@@ -2,7 +2,7 @@ from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 VERSION_MAJOR = 5
-VERSION_MINOR = 5
+VERSION_MINOR = 6
 VERSION_BETA = True
 PROJECT_NAME = f"TikTokDownloader V{VERSION_MAJOR}.{
 VERSION_MINOR}{" Beta" if VERSION_BETA else ""}"
@@ -60,6 +60,7 @@ QRCODE_HEADERS = {
 BLANK_PREVIEW = "static/images/blank.png"
 
 VIDEO_INDEX: int = -1
+VIDEO_TIKTOK_INDEX: int = 0
 IMAGE_INDEX: int = -1
 IMAGE_TIKTOK_INDEX: int = -1
 VIDEOS_INDEX: int = -1

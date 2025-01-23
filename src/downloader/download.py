@@ -315,11 +315,12 @@ class Downloader:
             ]
             await gather(*tasks)
 
-    def deal_folder_path(self,
-                         root: Path,
-                         name: str,
-                         folder_mode=False,
-                         ) -> tuple[Path, Path]:
+    def deal_folder_path(
+            self,
+            root: Path,
+            name: str,
+            folder_mode=False,
+    ) -> tuple[Path, Path]:
         """生成文件的临时路径和目标路径"""
         root = self.create_detail_folder(root, name, folder_mode)
         root.mkdir(exist_ok=True)
@@ -349,6 +350,9 @@ class Downloader:
             suffix: str = "jpeg",
             type_: str = _("图集"),
     ) -> None:
+        if not item["downloads"]:
+            self.log.error(_("【{type}】{name} 提取文件下载地址失败，跳过下载").format(type=type_, name=name))
+            return
         for index, img in enumerate(
                 item["downloads"],
                 start=1,
@@ -385,6 +389,9 @@ class Downloader:
             suffix: str = "mp4",
             type_: str = _("视频"),
     ) -> None:
+        if not item["downloads"]:
+            self.log.error(_("【{type}】{name} 提取文件下载地址失败，跳过下载").format(type=type_, name=name))
+            return
         if await self.is_skip(
                 id_,
                 p := actual_root.with_name(
