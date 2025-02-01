@@ -2,6 +2,16 @@
   "accounts_urls": [
     {
       "mark": "",
+      "game": "coser同行",
+      "name": "风雅鉴赏",
+      "url": "https://www.douyin.com/user/MS4wLjABAAAAKfKXyOglOulj2lQ5nOKZ97L7YF7gQgSAREtnm1qPzOM?from_tab_name=main&is_search=0&list_name=follow&nt=0",
+      "tab": "collects",
+      "earliest": "2024/9/19",
+      "latest": "",
+      "enable": false
+    },
+    {
+      "mark": "",
       "game": "尘白禁区",
       "name": "田伯光本光",
       "url": "https://www.douyin.com/user/MS4wLjABAAAAqHQu6riyvIMpxo6s1YEmZcFTfZYyBR1CKwYBR-ppmH0W3REBSKAFnUy9QDFoaS20",
@@ -45,6 +55,16 @@
       "game": "coser同行",
       "name": "安锦",
       "url": "https://www.douyin.com/user/MS4wLjABAAAAlmuIpxo_pEBJr2cVl-jpcUpgoOI49xqBMSZ1tG36ZK2xbZM5__dDMQcNsr2sv2ZR?from_tab_name=main",
+      "tab": "post",
+      "earliest": "2024/9/19",
+      "latest": "",
+      "enable": false
+    },
+    {
+      "mark": "冷酷无情碳烤鱼",
+      "game": "崩坏星穹铁道",
+      "name": "冷酷无情碳烤鱼",
+      "url": "https://www.douyin.com/user/MS4wLjABAAAAg8ipb3nMivoOwnNuVcsrRjfNhaUfq2-bbAk25-CziSc",
       "tab": "post",
       "earliest": "2024/9/19",
       "latest": "",
@@ -243,9 +263,19 @@
       "enable": false
     },
     {
+      "mark": "暗区突围凌阳",
+      "game": "暗区突围",
+      "name": "暗区突围凌阳",
+      "url": "https://www.douyin.com/user/MS4wLjABAAAALcZ6E6-W5GinQFUHiMyEQsftomc_jp7w4wYm8PtyF9A",
+      "tab": "post",
+      "earliest": "2025/1/31",
+      "latest": "",
+      "enable": true
+    },
+    {
       "mark": "",
       "game": "逆水寒手游",
-      "name": "逆水寒攻略号",
+      "name": "逆水寒攻略",
       "url": "https://www.douyin.com/user/MS4wLjABAAAAtujEwKfeRXdyvsfFBQNhQ2YcHZGo5YbvYudLzu_3Fhg?from_tab_name=main&vid=7448863502028131644",
       "tab": "post",
       "earliest": "2024/9/19",
@@ -295,6 +325,26 @@
     {
       "mark": "",
       "game": "游戏综合",
+      "name": "小熊在努力",
+      "url": "https://www.douyin.com/user/MS4wLjABAAAAxnSBIAJUvuzlr9ghL-QK7BK_C-Q9WsKTbpe7i1W92tQ",
+      "tab": "post",
+      "earliest": "2024/9/19",
+      "latest": "",
+      "enable": false
+    },
+    {
+      "mark": "",
+      "game": "coser同行",
+      "name": "55游戏酱",
+      "url": "https://www.douyin.com/user/MS4wLjABAAAAoa42WpnFlCqTmnrvk2zgVL4qw3kO0qyKY7dN3J2GUmE",
+      "tab": "post",
+      "earliest": "2024/9/19",
+      "latest": "",
+      "enable": false
+    },
+    {
+      "mark": "",
+      "game": "游戏综合",
       "name": "仁菜和尹哒",
       "url": "https://www.douyin.com/user/MS4wLjABAAAAFvlXj2AtoTt8ZKtMFWR4RSpSLR7c-7CYmhrAnGIbkjY6AEFIiW_7sA_HqvcgYxpV?from_tab_name=main",
       "tab": "post",
@@ -307,6 +357,46 @@
       "game": "游戏综合",
       "name": "点心",
       "url": "https://www.douyin.com/user/MS4wLjABAAAAONwPdRIPAvYKvrOCfFIMvezVXIvpG_9QVdd8sJOFWepcyup-TXx6QI97t9bwu56p",
+      "tab": "post",
+      "earliest": "2024/9/19",
+      "latest": "",
+      "enable": false
+    },
+    {
+      "mark": "",
+      "game": "coser同行",
+      "name": "冰雪佳人",
+      "url": "https://www.douyin.com/user/MS4wLjABAAAA45ZBGpTdrzW_KqaJa_TEd64H74krfXbVcuc5j5ASuOE",
+      "tab": "post",
+      "earliest": "2024/9/19",
+      "latest": "",
+      "enable": false
+    },
+    {
+      "mark": "理智",
+      "game": "coser同行",
+      "name": "理智",
+      "url": "https://www.douyin.com/user/MS4wLjABAAAAIii2aQV0oKoujZ5SVvxlGAVn_0wXRfusjCLJXjA9lNE?from_tab_name=main&vid=7459753537698794804",
+      "tab": "post",
+      "earliest": "2024/9/19",
+      "latest": "",
+      "enable": false
+    },
+    {
+      "mark": "",
+      "game": "恋与深空",
+      "name": "yiyayo",
+      "url": "https://www.douyin.com/user/MS4wLjABAAAAf1O6pL1YeMDzZT1wdBEb0ltBJUOohqV1i9sXeAjKt4M?from_tab_name=main",
+      "tab": "post",
+      "earliest": "2024/9/19",
+      "latest": "",
+      "enable": false
+    },
+    {
+      "mark": "",
+      "game": "恋与深空",
+      "name": "苏雪洛",
+      "url": "https://www.douyin.com/user/MS4wLjABAAAA8b7z9XrwXiHR9Wpp9j_4gXM6mVGEwD3whZdz8rdajmC2F4oixu1uPq2R55I1dHeq?from_tab_name=main",
       "tab": "post",
       "earliest": "2024/9/19",
       "latest": "",
@@ -333,10 +423,50 @@
       "enable": false
     },
     {
+      "mark": "孟程程",
+      "game": "coser本人",
+      "name": "孟程程",
+      "url": "https://www.douyin.com/user/MS4wLjABAAAAyi2L9LbVQGWGfSpXBZ9EKgmPxyyXv1fqSjKiFqa78rc",
+      "tab": "post",
+      "earliest": "2024/9/19",
+      "latest": "",
+      "enable": false
+    },
+    {
+      "mark": "壁纸收藏夹",
+      "game": "coser同行",
+      "name": "壁纸收藏夹",
+      "url": "https://www.douyin.com/user/MS4wLjABAAAAQYdG_LEYoiIhBnvC3eeYIHxWoJWXG1fySg-F2b7q7_4",
+      "tab": "post",
+      "earliest": "2024/9/19",
+      "latest": "",
+      "enable": false
+    },
+    {
       "mark": "",
       "game": "英雄联盟",
       "name": "𝐒𝐲𝐢𝐧𝐆𝐳𝟏",
       "url": "https://www.douyin.com/user/MS4wLjABAAAAeRy1p-vZY_A_kSbROyM5AeMPb0rGFvTwMeSaOQgEUpdUM2r3DhJLEBYgFbSurhdg?from_tab_name=main",
+      "tab": "post",
+      "earliest": "2024/9/19",
+      "latest": "",
+      "enable": false
+    },
+    {
+      "mark": "小y饱",
+      "game": "英雄联盟手游",
+      "name": "小y饱",
+      "url": "https://www.douyin.com/user/MS4wLjABAAAANb4shhY8ciJ-4Zgw4y-0m7HYcSbAx2byqWqmzcXWC-0",
+      "tab": "post",
+      "earliest": "2024/9/19",
+      "latest": "",
+      "enable": false
+    },
+    {
+      "mark": "哦哟哟",
+      "game": "英雄联盟手游",
+      "name": "哦哟哟",
+      "url": "https://www.douyin.com/user/MS4wLjABAAAA3Tyx_Hgs0neRLy7x4-jiOvp7dGF1OhWwNxBhMAB1fDzeFCRC5a6hcJrN6mxRFXB2",
       "tab": "post",
       "earliest": "2024/9/19",
       "latest": "",
@@ -357,6 +487,16 @@
       "game": "和平精英",
       "name": "鲨鱼爱桂霞",
       "url": "https://www.douyin.com/user/MS4wLjABAAAAREh5Z9XyTwFE5DcPPy_QrNcTqFUDJ3T1xVaXw7vnv10?from_tab_name=main",
+      "tab": "post",
+      "earliest": "2024/9/19",
+      "latest": "",
+      "enable": false
+    },
+    {
+      "mark": "江祁凡",
+      "game": "和平精英",
+      "name": "江祁凡",
+      "url": "https://www.douyin.com/user/MS4wLjABAAAAUsbWxl90B5m5GwQFhpZhMN390ocwisfGBY5k085w-HA",
       "tab": "post",
       "earliest": "2024/9/19",
       "latest": "",
@@ -458,9 +598,9 @@
       "name": "蛋仔派对西门",
       "url": "https://www.douyin.com/user/MS4wLjABAAAA8IcgIJlZ2NjaRPvlg9FAIX5nTnyL6IrSMByaXCz0A311EcoHfnfKqhZXmG7M1RXa",
       "tab": "post",
-      "earliest": "2025/1/23",
+      "earliest": "2024/9/19",
       "latest": "",
-      "enable": true
+      "enable": false
     },
     {
       "mark": "",
@@ -468,9 +608,9 @@
       "name": "蛋仔派对半径",
       "url": "https://www.douyin.com/user/MS4wLjABAAAA2W2qN29Kk7JpnHgDGtL5f6Ai5FfgIgQqK0s_iRlvXw8?from_tab_name=main",
       "tab": "post",
-      "earliest": "2025/1/23",
+      "earliest": "2024/9/19",
       "latest": "",
-      "enable": true
+      "enable": false
     },
     {
       "mark": "",
@@ -545,7 +685,7 @@
     {
       "mark": "",
       "game": "诛仙世界",
-      "name": "大臣（诛仙世界）",
+      "name": "大臣",
       "url": "https://www.douyin.com/user/MS4wLjABAAAA7PKWX4iN8GzctR_ZFvgUB73u3a0dxb3mPFcR2BBb0s0",
       "tab": "post",
       "earliest": "2024/9/19",
@@ -780,21 +920,21 @@
       "tab": "账号主页类型",
       "earliest": "2024/12/27",
       "latest": "作品最晚发布日期",
-      "enable": true
+      "enable": false
     }
   ],
   "mix_urls": [
     {
       "mark": "合集标识，可以设置为空字符串",
       "url": "合集链接或者作品链接",
-      "enable": true
+      "enable": false
     }
   ],
   "mix_urls_tiktok": [
     {
       "mark": "合集标识，可以设置为空字符串",
       "url": "合集链接或者作品链接",
-      "enable": true
+      "enable": false
     }
   ],
   "owner_url": {

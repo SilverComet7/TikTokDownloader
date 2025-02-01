@@ -7,7 +7,7 @@
     "doc": "docs"
   },
   "scripts": {
-    "gameVideoList": "nodemon videoReName_FFmpegHandle_douyin_bilibili_async.js",
+    "gameVideoList": "nodemon videoReName_FFmpegHandle.js",
     "videoGroupList": "nodemon videoDownloadAndGroupList.js"
   },
   "author": "",

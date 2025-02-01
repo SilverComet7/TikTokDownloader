@@ -4,6 +4,7 @@ const { exec } = require("child_process");
 const util = require("util");
 const fsPromises = fs.promises;
 const execPromise = util.promisify(exec);
+const { deduplicateVideo } = require('./videoTransformDeduplication.js');
 
 // 格式化成为 YYYY-MM-DD 的字符串
 const formatDate = () => {
@@ -32,19 +33,8 @@ if (fs.existsSync(mapFilePath)) {
 
 
 
-// TODO 
 // 瓜分奖励查看人数计算性价比
 // 爆款视频重复投递策略   title+封面+投稿时间点+Tag
-
-const mergeVideoInfoObj = {
-  mergedLimitTime: 20,
-  videoIndex: 0,
-  totalDuration: 0,
-  fileStr: '',
-  needMergeBiliBiliVideoPath: [],  // 后续合并
-  needDeleteTempFilePath: []  // 后续删除
-}
-
 let w_h = "_9_16";
 
 
@@ -81,11 +71,12 @@ async function getVideoParams(filePath) {
   }
 }
 
-async function processVideo(filePath, videoParams, basicVideoInfoObj,
-  pathInfoObj, biliObj) {
+async function processVideo(filePath, basicVideoInfoObj,
+  pathInfoObj, mergeVideoInfoObj) {
 
 
   let {
+    onlyRename,
     checkName,
     beforeTime,
     fps,
@@ -93,10 +84,9 @@ async function processVideo(filePath, videoParams, basicVideoInfoObj,
     replaceMusic,
     gameName,
     groupName,
-    onlyRename,
+    deduplicationConfig
   } = basicVideoInfoObj;
   scalePercent = scalePercent / 100;
-  // 解构path
 
   let {
     musicFilePath,
@@ -106,37 +96,59 @@ async function processVideo(filePath, videoParams, basicVideoInfoObj,
   } = pathInfoObj
 
 
-
-  let originFileName = path.basename(filePath, path.extname(filePath));
-  // 默认#标签在描述说明后面
-  let nickName = originFileName.split("-")[0];
-  fileName = originFileName.split("#")[0];
-  fileName = fileName.split("-")[1];
-  if (fileName == "") {
-    // #标签在描述说明前面
-    const arr = originFileName.split("#")
-    fileName = arr[arr.length - 1];
-    fileName = fileName.split("-")[0];
-    // TODO 接入AI改名，生成新的爆款标题
-  }
-  // 如果取出desc描述不包含游戏名则最前面添加游戏名
-  if (!fileName?.includes(gameName) && groupName === '攻略') fileName = `【${gameName}】${fileName}`
-  // 检查转移过去的文件是否有同名,有则加个时间
-  // if (fs.existsSync(path.join(newVideoFolderPath, fileName + '.mp4'))) {
-  //   fileName = fileName + '_' + new Date().getTime();
-  // }
-  // if (!fileName) fileName = originFileName + '_' + new Date().getTime()
-  let tempFileName = groupName === '攻略' ? fileName : fileName + '_' + new Date().getTime();
-  // let tempFileName = fileName
-
   const fileExt = path.extname(filePath);
+  let originFileName = path.basename(filePath, path.extname(filePath));
+  // 如果文件名包含#
+  let fileName = ''
+  if (originFileName.includes("#")) {
+    // 默认#标签在描述说明后面
+    const fileSplit = originFileName.split("-")
+    let nickName = fileSplit[0];
+    const year = fileSplit[fileSplit.length - 3]
+    const month = fileSplit[fileSplit.length - 2]
+    const day = fileSplit[fileSplit.length - 1].split(' ')[0]
+    let publishTime = `${year}-${month}-${day}`
+    fileName = originFileName.split("#")[0];
+    fileName = fileName.split("-")[1];
+    if (fileName == "") {
+      const arr = originFileName.split("#")
+      fileName = arr[arr.length - 1];
+      fileName = fileName.split("-")[0];
+      // TODO 接入deepSeek AI改名，生成新的爆款自媒体标题
+
+    }
+    // 如果取出desc描述不包含游戏名则最前面添加游戏名
+    if (!fileName?.includes(gameName) && groupName === '攻略') fileName = `${fileName}~${gameName}`
+  } else {
+    fileName = originFileName
+  }
+  let tempFileName = groupName === '攻略' ? fileName : fileName + '_' + publishTime;
+
+  if (checkName) {
+    return console.log(tempFileName);
+  }
+  if (onlyRename) {
+    const finalGameVideoScrPath = path.join(videoFolderPath, `/已重命名处理`)
+    const finalGameVideoScrYiFaPath = path.join(videoFolderPath, `/已重命名处理/已发`)
+    // 判断是否存在已处理文件夹,不存在则创建
+    if (!fs.existsSync(finalGameVideoScrPath)) {
+      fs.mkdirSync(finalGameVideoScrPath);
+      fs.mkdirSync(finalGameVideoScrYiFaPath);
+    }
+
+    // 如果重命名后（部分作者不标标题）存在同名文件，先替换一下tempFileName
+    const finalGameVideoPath = path.join(videoFolderPath, `/已重命名处理/${tempFileName}${fileExt}`)
+    fs.renameSync(filePath, finalGameVideoPath);
+    fileNameMap[originFileName] = tempFileName;
+    return;
+  }
+
+
   const videoTempPath = path.join(
     videoFolderPath,
     `${tempFileName}_temp${fileExt}`
   );
-  if (checkName) {
-    return console.log(fileName);
-  }
+
 
   const finalNoMusicVideoPath = path.join(
     videoFolderPath,
@@ -151,29 +163,6 @@ async function processVideo(filePath, videoParams, basicVideoInfoObj,
     videoFolderPath,
     `${tempFileName}_game_filelist.txt`
   );
-
-
-
-  if (groupName === '攻略') {
-
-    const finalGameVideoScrPath = path.join(videoFolderPath, `/已重命名处理`)
-    const finalGameVideoScrYiFaPath = path.join(videoFolderPath, `/已重命名处理/已发`)
-    // 判断是否存在已处理文件夹
-    if (!fs.existsSync(finalGameVideoScrPath)) {
-      fs.mkdirSync(finalGameVideoScrPath);
-      fs.mkdirSync(finalGameVideoScrYiFaPath);
-    }
-
-    // 如果重命名后（部分作者不标标题）存在同名文件，先替换一下tempFileName
-    const finalGameVideoPath = path.join(videoFolderPath, `/已重命名处理/${tempFileName}${fileExt}`)
-
-    fs.renameSync(filePath, finalGameVideoPath);
-
-    fileNameMap[originFileName] = fileName;
-    return;
-  }
-
-  // B站 coser打卡的视频 重命名
 
 
   //  剩下都是非攻略  coser转换的
@@ -203,31 +192,20 @@ async function processVideo(filePath, videoParams, basicVideoInfoObj,
 
   await deleteTempFile(); // 先删除之前的文件，避免ffmpeg卡住
 
-
-  // 缩放分辨率
+  // 调整videoParams的获取位置
+  let videoParams = await getVideoParams(filePath);
   if (Number(videoParams.width) > Number(videoParams.height)) {
     w_h = "_16_9";
     scale = `scale=1920:1080`;
-    // scale = `1440:1080`;
-    // scale = `960:720`;
-    // scale = `1280:720`;
-    // scale = `1420:720`;
-    // scale = `scale=iw*1080/ih:1080`;
   } else {
     w_h = "_9_16";
     scale = `scale=1080:1920`;
-    // scale = `1080:1440`;
-    // scale = `720:960`;
-    // scale = `720:1280`;
-    // scale = `720:1420`;
-    // scale = `scale=iw*1920/ih:1920`;
   }
   if (scalePercent) scale = `scale=${videoParams.width * scalePercent}:${videoParams.height * scalePercent}`
-  const endingFilePath = path.join(scriptDir, `./点赞关注${w_h}.mp4`); // TODO 随机片尾关注文件路径 
 
   let command2 = ''
   if (groupName == "coser本人" || gameName == "coser本人") {
-    // 打上水印
+    // coser本人打上水印
     command2 = `ffmpeg -ss ${beforeTime}   -i "${filePath}"  -r ${fps} -vf "${scale},drawtext=fontfile='./SourceHanSansCN-Bold.otf':text='coser：${nickName}':fontsize=18:fontcolor=white:x=50:y=50" -c:v libx264 -c:a aac "${videoTempPath}"`;
   } else {
     command2 = `ffmpeg -ss ${beforeTime}   -i "${filePath}"  -r ${fps} -vf "${scale}" -c:v libx264 -c:a aac "${videoTempPath}"`;
@@ -235,32 +213,31 @@ async function processVideo(filePath, videoParams, basicVideoInfoObj,
   await runFFmpegCommand(command2);
 
 
-
-
-  let scaleName = scale.split(':').join('x').split("=")[1]
-  // N s合集处理
-  const videoTrueDuration = (videoParams.duration - beforeTime);
-  biliObj.totalDuration += videoTrueDuration
-  biliObj.fileStr += `file '${videoTempPath}'\n`;
-  if (biliObj.totalDuration > biliObj.mergedLimitTime) {
-    const txtPath = path.join(newVideoFolderPath, `/合集/${gameName}coser合集${biliObj.videoIndex + 1}.0_filelist.txt`)
-    const mp4File = path.join(newVideoFolderPath, `/合集/${gameName}coser合集${biliObj.videoIndex + 1}.0.mp4`)
-    fsPromises.writeFile(txtPath, biliObj.fileStr);
-    biliObj.totalDuration = 0
-    biliObj.fileStr = ''
-    biliObj.videoIndex += 1
-    biliObj.needMergeBiliBiliVideoPath.push({
-      txtPath,
-      mp4File
-    })
-    biliObj.needDeleteTempFilePath.push(txtPath)
+  // 只在mergeVideoInfoObj存在时执行合并相关操作
+  if (mergeVideoInfoObj) {
+    const videoTrueDuration = (videoParams.duration - beforeTime);
+    mergeVideoInfoObj.totalDuration += videoTrueDuration
+    mergeVideoInfoObj.fileStr += `file '${videoTempPath}'\n`;
+    if (mergeVideoInfoObj.totalDuration > mergeVideoInfoObj.mergedLimitTime) {
+      const txtPath = path.join(newVideoFolderPath, `/合集/${gameName}coser合集${mergeVideoInfoObj.videoIndex + 1}.0_filelist.txt`)
+      const mp4File = path.join(newVideoFolderPath, `/合集/${gameName}coser合集${mergeVideoInfoObj.videoIndex + 1}.0.mp4`)
+      fsPromises.writeFile(txtPath, mergeVideoInfoObj.fileStr);
+      mergeVideoInfoObj.totalDuration = 0
+      mergeVideoInfoObj.fileStr = ''
+      mergeVideoInfoObj.videoIndex += 1
+      mergeVideoInfoObj.needMergeBiliBiliVideoPath.push({
+        txtPath,
+        mp4File
+      })
+      mergeVideoInfoObj.needDeleteTempFilePath.push(txtPath)
+    }
+    mergeVideoInfoObj.needDeleteTempFilePath.push(videoTempPath)
   }
-  biliObj.needDeleteTempFilePath.push(videoTempPath)
 
   // 步骤3：生成 filelist.txt
+  const endingFilePath = path.join(scriptDir, `./素材/after/点赞关注${w_h}.mp4`);
   const filelistContentTest = `file '${videoTempPath}'\nfile '${endingFilePath}'`;
   fs.writeFileSync(fileListPath, filelistContentTest);
-
 
   const finalVideoPath = path.join(newVideoFolderPath, `${tempFileName}${fileExt}`);
   // 步骤4：合并视频和默认片尾
@@ -275,12 +252,25 @@ async function processVideo(filePath, videoParams, basicVideoInfoObj,
     await runFFmpegCommand(command3);
   }
 
+  // 在处理完基本的视频操作后，如果有去重配置则进行去重处理
+  if (deduplicationConfig && deduplicationConfig.enable && Object.keys(deduplicationConfig).length > 0) {
+    try {
+      await deduplicateVideo(finalVideoPath, deduplicationConfig);
+      console.log(`视频去重处理完成: ${finalVideoPath}`);
+    } catch (error) {
+      console.error(`视频去重处理失败: ${error.message}`);
+    }
+  }
+
   const originNewFilePath = path.join(
-      newVideoFolderPath,
-      `${originFileName}${fileExt}`
+    newVideoFolderPath,
+    `${originFileName}${fileExt}`
   );
   fs.renameSync(filePath, originNewFilePath); // coser 不移动原始文件，方便后续重复制作爆款
   fileNameMap[originFileName] = fileName;
+
+
+
   return await deleteTempFile();
 
 
@@ -311,7 +301,6 @@ async function processVideo(filePath, videoParams, basicVideoInfoObj,
   await runFFmpegCommand(command5t);
   await deleteTempFile();
   return;
-
 }
 
 
@@ -322,11 +311,13 @@ async function ffmpegHandleVideos(basicVideoInfoObj = {
   scalePercent: 0,
   replaceMusic: false,
   musicName: 'billll',
-  gameName: '崩坏3', // []
-  groupName: 'coser本人',  // []
+  gameName: '崩坏3',
+  groupName: 'coser本人',
   onlyRename: false,
+  deduplicationConfig: null,
+  enableMerge: false,     // 新增：是否启用合并
+  mergedLimitTime: 20     // 新增：合并时长限制
 }) {
-
   let {
     checkName,
     beforeTime,
@@ -336,8 +327,19 @@ async function ffmpegHandleVideos(basicVideoInfoObj = {
     musicName,
     gameName,
     groupName,
+    enableMerge,
+    mergedLimitTime
   } = basicVideoInfoObj;
 
+  // 初始化合并视频信息对象
+  const mergeVideoInfoObj = {
+    mergedLimitTime: mergedLimitTime || 20,
+    videoIndex: 0,
+    totalDuration: 0,
+    fileStr: '',
+    needMergeBiliBiliVideoPath: [],  // 后续合并
+    needDeleteTempFilePath: []  // 后续删除
+  }
 
   const musicFilePath = path.join(scriptDir, `./素材/music/${musicName}.mp3`); // 音乐文件路径,优先foldPath下的music文件夹，其次读取根目录下的素材/music文件夹里的随机mp3文件
   const foldPath = `${gameName}/${groupName}`;
@@ -355,51 +357,38 @@ async function ffmpegHandleVideos(basicVideoInfoObj = {
 
 
   try {
-
-    // 循环读取多游戏多分类
-
     const files = await fsPromises.readdir(videoFolderPath);
-    // return;
-
-
-
-    // const gameFoldPath = path.join(scriptDir, `gameList/`);
-    // const CGfile = path.join(gameFoldPath, '/CG/CG.mp4')
-    // const CGfile_16_9_path = path.join(gameFoldPath, '/CG_16_9.mp4')
-    // const CGfile_9_16_path = path.join(gameFoldPath, '/CG_9_16.mp4')
-    // if (fs.existsSync(CGfile)) {
-    //     if (!fs.existsSync(CGfile_16_9_path)) {
-    //         let command = `ffmpeg -i "${CGfile}"  -r 30 -vf "scale=1920:1080" -c:v libx264 -c:a aac "${CGfile_16_9_path}"`;
-    //         await runFFmpegCommand(command)
-    //     }
-    //     if (!fs.existsSync(CGfile_9_16_path)) {
-    //         let command = `ffmpeg -i "${CGfile}"  -r 30 -vf "scale=1080:1920" -c:v libx264 -c:a aac "${CGfile_9_16_path}"`;
-    //         await runFFmpegCommand(command)
-    //     }
-    // }
-
     const videoPromises = [];
+
     for (const file of files) {
       if (path.extname(file).toLowerCase() === ".mp4" || path.extname(file).toLowerCase() === ".mov") {
         const filePath = path.join(videoFolderPath, file);
-        const videoParams = await getVideoParams(filePath);
+
         try {
-          videoPromises.push(processVideo(filePath, videoParams, basicVideoInfoObj,
-            pathInfoObj, mergeVideoInfoObj))
+          videoPromises.push(processVideo(filePath, basicVideoInfoObj,
+            pathInfoObj, enableMerge ? mergeVideoInfoObj : null))  // 根据enableMerge决定是否传入mergeVideoInfoObj
         } catch (error) {
+          console.error("处理视频出错:", error);
         }
       }
     }
     await Promise.all(videoPromises)
-    if(checkName) return 
-    // 合并30s视频,合并音频
-    await Promise.all(mergeVideoInfoObj.needMergeBiliBiliVideoPath.map(async ({ txtPath,
-      mp4File, }) => {
-      let command = ''
-      if (replaceMusic) command = `ffmpeg -f concat -safe 0 -i "${txtPath}" -i "${musicFilePath}" -c copy -map 0:v:0 -map 1:a:0 -shortest  "${mp4File}"`;
-      else command = `ffmpeg -f concat -safe 0 -i "${txtPath}" -c copy  "${mp4File}"`;
-      return await runFFmpegCommand(command);
-    }))
+    if (checkName) return
+
+    // 只在启用合并时执行合并操作
+    if (enableMerge) {
+      // 合并视频,合并音频
+      await Promise.all(mergeVideoInfoObj.needMergeBiliBiliVideoPath.map(async ({ txtPath, mp4File }) => {
+        let command = ''
+        if (replaceMusic) {
+          command = `ffmpeg -f concat -safe 0 -i "${txtPath}" -i "${musicFilePath}" -c copy -map 0:v:0 -map 1:a:0 -shortest "${mp4File}"`;
+        } else {
+          command = `ffmpeg -f concat -safe 0 -i "${txtPath}" -c copy "${mp4File}"`;
+        }
+        return await runFFmpegCommand(command);
+      }))
+
+    }
     // 删除临时文件
     await Promise.all(mergeVideoInfoObj.needDeleteTempFilePath.map(async (filePath) => {
       return await fsPromises.unlink(filePath);

@@ -646,7 +646,7 @@ class Downloader:
     ) -> Path:
         match mode:
             case "post":
-                folder_name = _("UID{id_}_{name}_发布作品").format(id_=id_, name=name)
+                folder_name = _("accountDownload/UID{id_}_{name}_发布作品").format(id_=id_, name=name)
             case "favorite":
                 folder_name = _("UID{id_}_{name}_喜欢作品").format(id_=id_, name=name)
             case "mix":
@@ -654,7 +654,7 @@ class Downloader:
             case "collection":
                 folder_name = _("UID{id_}_{name}_收藏作品").format(id_=id_, name=name)
             case "collects":
-                folder_name = _("CID{id_}_{name}_收藏夹作品").format(id_=id_, name=name)
+                folder_name = _("accountDownload/CID{id_}_{name}_收藏夹作品").format(id_=id_, name=name)
             case "detail":
                 folder_name = self.folder_name
             case _:
