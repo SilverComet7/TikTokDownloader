@@ -100,14 +100,13 @@ async function processVideo(filePath, basicVideoInfoObj,
   let originFileName = path.basename(filePath, path.extname(filePath));
   // 如果文件名包含#
   let fileName = ''
+  const fileSplit = originFileName.split("-")
+  let nickName = fileSplit[0];
+  let publishTime = ''
   if (originFileName.includes("#")) {
-    // 默认#标签在描述说明后面
-    const fileSplit = originFileName.split("-")
-    let nickName = fileSplit[0];
-    const year = fileSplit[fileSplit.length - 3]
-    const month = fileSplit[fileSplit.length - 2]
-    const day = fileSplit[fileSplit.length - 1].split(' ')[0]
-    let publishTime = `${year}-${month}-${day}`
+    publishTime =  fileSplit.slice(-3).join('-')
+    console.log(fileSplit.slice(-3),publishTime);
+    
     fileName = originFileName.split("#")[0];
     fileName = fileName.split("-")[1];
     if (fileName == "") {
@@ -174,9 +173,11 @@ async function processVideo(filePath, basicVideoInfoObj,
 
 
 
-  async function deleteTempFile() {
+
+  async function deleteTempFile(mergeVideoInfoObj) {
     if (fs.existsSync(fileListPath)) await fsPromises.unlink(fileListPath);
-    // if (fs.existsSync(videoTempPath)) await fsPromises.unlink(videoTempPath);  //最后删除  30S合并需要使用
+
+
     if (fs.existsSync(finalNoMusicVideoPath))
       await fsPromises.unlink(finalNoMusicVideoPath);
     if (fs.existsSync(gameVideoPath)) await fsPromises.unlink(gameVideoPath);
@@ -188,9 +189,12 @@ async function processVideo(filePath, basicVideoInfoObj,
       await fsPromises.unlink(
         `${finalNoMusicVideoPath.replace("_final", "_game_final")}`
       );
+    // 存在合并视频信息对象时，不直接删除临时文件，最后合并后删除
+    if (mergeVideoInfoObj) return;
+    if (fs.existsSync(videoTempPath)) await fsPromises.unlink(videoTempPath);  //最后删除  30S合并需要使用
   }
 
-  await deleteTempFile(); // 先删除之前的文件，避免ffmpeg卡住
+  await deleteTempFile(mergeVideoInfoObj); // 先删除之前的文件，避免ffmpeg卡住
 
   // 调整videoParams的获取位置
   let videoParams = await getVideoParams(filePath);
@@ -262,16 +266,18 @@ async function processVideo(filePath, basicVideoInfoObj,
     }
   }
 
-  const originNewFilePath = path.join(
-    newVideoFolderPath,
-    `${originFileName}${fileExt}`
-  );
-  fs.renameSync(filePath, originNewFilePath); // coser 不移动原始文件，方便后续重复制作爆款
-  fileNameMap[originFileName] = fileName;
+  if (fileName !== originFileName) {
+    const originNewFilePath = path.join(
+      newVideoFolderPath,
+      `${originFileName}${fileExt}`
+    );
+    fs.renameSync(filePath, originNewFilePath); // coser 不移动原始文件，方便后续重复制作爆款
+    fileNameMap[originFileName] = fileName;
+  }
 
 
 
-  return await deleteTempFile();
+  return await deleteTempFile(mergeVideoInfoObj);
 
 
 
@@ -387,12 +393,11 @@ async function ffmpegHandleVideos(basicVideoInfoObj = {
         }
         return await runFFmpegCommand(command);
       }))
-
+      // 删除临时文件
+      await Promise.all(mergeVideoInfoObj.needDeleteTempFilePath.map(async (filePath) => {
+        return await fsPromises.unlink(filePath);
+      }))
     }
-    // 删除临时文件
-    await Promise.all(mergeVideoInfoObj.needDeleteTempFilePath.map(async (filePath) => {
-      return await fsPromises.unlink(filePath);
-    }))
 
     // 将文件名映射保存为 JSON 文件
     fs.writeFileSync(mapFilePath, JSON.stringify(fileNameMap, null, 2));

@@ -149,144 +149,105 @@ async function deleteIntermediateFiles(foldPath, baseFileName) {
 
 // 添加去重配置接口
 async function deduplicateVideo(filePath, deduplicationConfig = {
-    // 基础参数
-    speedFactor: 0.95,      // 变速因子(0.8-1.2)
-    // 注释掉基础转换相关参数，因为已经在 videoReName_FFmpegHandle.js 处理过
-    // targetWidth: 1280,      // 目标宽度
-    // targetHeight: 720,      // 目标高度
-    // frameRate: 30,          // 目标帧率
-    // scalePercent: 0.8,      // 缩放比例(0-1)
-
-    // 特效参数
-    enableMirror: false,    // 是否启用镜像
-    enableRotate: false,    // 是否启用旋转
-    rotateAngle: 1,         // 旋转角度(0-360)
-    enableBlur: false,      // 是否启用模糊
-    blurRadius: 0.1,        // 模糊半径(0-1)
-    enableFade: false,      // 是否启用淡入淡出
-    fadeDuration: 0.5,      // 淡入淡出时长(秒)
-
-    // 色彩参数 - 设置默认值
-    brightness: 0,          // 亮度调整(-1到1)
-    contrast: 1,            // 对比度调整(0-2) 
-    saturation: 1,          // 饱和度调整(0-2)
-
-    // 背景参数
-    enableBgBlur: false,    // 是否启用背景虚化
-    bgBlurTop: 0.1,         // 上部虚化比例(0-1)
-    bgBlurBottom: 0.1,      // 下部虚化比例(0-1)
+    speedFactor: 0.95,
+    enableMirror: false,
+    enableRotate: false,
+    rotateAngle: 1,
+    enableBlur: false,
+    blurRadius: 0.1,
+    enableFade: false,
+    fadeDuration: 0.5,
+    brightness: 0,
+    contrast: 1,
+    saturation: 1,
+    enableBgBlur: false,
+    bgBlurTop: 0.1,
+    bgBlurBottom: 0.1
 }) {
-    console.log(deduplicationConfig)
     const foldPath = path.dirname(filePath);
     const baseFileName = path.basename(filePath, path.extname(filePath));
-    const originFilePath = filePath;
+    const outputPath = path.join(foldPath, `${baseFileName}_dedup.mp4`);
 
-    // 根据配置参数决定处理流程
-    let currentFilePath = originFilePath;
-
-    // 注释掉基础转换部分
-    // // 1. 基础处理 - 分辨率和帧率(必选)
-    // let modifiedFilePath = path.join(foldPath, `${baseFileName}_modified.mp4`);
-    // await modifyResolutionAndFrameRate(
-    //   currentFilePath, 
-    //   modifiedFilePath,
-    //   deduplicationConfig.scalePercent,
-    //   deduplicationConfig.targetWidth,
-    //   deduplicationConfig.targetHeight, 
-    //   deduplicationConfig.frameRate
-    // );
-    // currentFilePath = modifiedFilePath;
-
-    // 1. 变速处理(可选)
+    // 构建滤镜链
+    let filters = [];
+    
+    // 1. 变速处理 (通过setpts和atempo)
     if (deduplicationConfig.speedFactor !== 1) {
-        let speedAdjustedFilePath = path.join(foldPath, `${baseFileName}_speed_adjusted.mp4`);
-        await changeVideoSpeed(
-            currentFilePath,
-            speedAdjustedFilePath,
-            deduplicationConfig.speedFactor
-        );
-        currentFilePath = speedAdjustedFilePath;
+        filters.push(`setpts=${1/deduplicationConfig.speedFactor}*PTS`);
+        // 音频速度调整将在最终命令中单独处理
     }
 
-    // 4. 背景虚化(可选)
-    if (deduplicationConfig.enableBgBlur) {
-        let blurredBgFilePath = path.join(foldPath, `${baseFileName}_blurred_bg.mp4`);
-        await addBlurredBackground(
-            currentFilePath,
-            blurredBgFilePath,
-            deduplicationConfig.bgBlurTop,
-            deduplicationConfig.bgBlurBottom
-        );
-        currentFilePath = blurredBgFilePath;
-    }
-
-    // 5. 模糊效果(可选)
-    if (deduplicationConfig.enableBlur) {
-        let blurredFilePath = path.join(foldPath, `${baseFileName}_blurred.mp4`);
-        await addBlurEffect(
-            currentFilePath,
-            blurredFilePath,
-            deduplicationConfig.blurRadius
-        );
-        currentFilePath = blurredFilePath;
-    }
-
-    // 6. 色彩调整(仅当参数不是默认值时才处理) 可选
-    if (deduplicationConfig.brightness !== 0 ||
-        deduplicationConfig.contrast !== 1 ||
-        deduplicationConfig.saturation !== 1) {
-        let colorAdjustedFilePath = path.join(foldPath, `${baseFileName}_color_adjusted.mp4`);
-        await adjustColor(
-            currentFilePath,
-            colorAdjustedFilePath,
-            deduplicationConfig.brightness,
-            deduplicationConfig.contrast,
-            deduplicationConfig.saturation
-        );
-        currentFilePath = colorAdjustedFilePath;
-    }
-
-    // 7. 淡入淡出(可选)
-    if (deduplicationConfig.enableFade) {
-        let fadeFilePath = path.join(foldPath, `${baseFileName}_fade.mp4`);
-        await addFadeEffect(
-            currentFilePath,
-            fadeFilePath,
-            deduplicationConfig.fadeDuration
-        );
-        currentFilePath = fadeFilePath;
-    }
-
-    // 2. 镜像处理(可选)
+    // 2. 镜像效果
     if (deduplicationConfig.enableMirror) {
-        let mirroredFilePath = path.join(foldPath, `${baseFileName}_mirrored.mp4`);
-        await mirrorVideo(currentFilePath, mirroredFilePath);
-        currentFilePath = mirroredFilePath;
+        filters.push('hflip');
     }
 
-    // 3. 旋转处理(可选)
+    // 3. 旋转效果
     if (deduplicationConfig.enableRotate) {
-        let rotatedFilePath = path.join(foldPath, `${baseFileName}_rotated.mp4`);
-        await rotateVideo(
-            currentFilePath,
-            rotatedFilePath,
-            deduplicationConfig.rotateAngle
-        );
-        currentFilePath = rotatedFilePath;
+        filters.push(`rotate=${deduplicationConfig.rotateAngle}*PI/180`);
     }
 
-    // 重命名最终文件
-    await fsPromises.rename(currentFilePath, filePath);
-    console.log(`最终处理后的文件: ${filePath}`);
+    // 4. 背景虚化
+    if (deduplicationConfig.enableBgBlur) {
+        filters.push(`split=2[bg][fg];[bg]scale=iw*1.1:-1,boxblur=20:20[blurred];[blurred][fg]overlay=(W-w)/2:(H-h)/2`);
+    }
 
-    // 删除中间文件
-    await deleteIntermediateFiles(foldPath, baseFileName);
+    // 5. 模糊效果
+    if (deduplicationConfig.enableBlur) {
+        filters.push(`boxblur=${deduplicationConfig.blurRadius}`);
+    }
+
+    // 6. 色彩调整
+    if (deduplicationConfig.brightness !== 0 || 
+        deduplicationConfig.contrast !== 1 || 
+        deduplicationConfig.saturation !== 1) {
+        filters.push(`eq=brightness=${deduplicationConfig.brightness}:contrast=${deduplicationConfig.contrast}:saturation=${deduplicationConfig.saturation}`);
+    }
+
+    // 7. 淡入淡出
+    if (deduplicationConfig.enableFade) {
+        filters.push(`fade=t=in:st=0:d=${deduplicationConfig.fadeDuration},fade=t=out:st=end_duration-${deduplicationConfig.fadeDuration}:d=${deduplicationConfig.fadeDuration}`);
+    }
+
+    // 构建最终的 ffmpeg 命令
+    let command = 'ffmpeg';
+    command += ` -i "${filePath}"`;  // 输入文件
+
+    // 添加滤镜链
+    if (filters.length > 0) {
+        command += ` -vf "${filters.join(',')}"`;
+    }
+
+    // 变速时需要单独处理音频
+    if (deduplicationConfig.speedFactor !== 1) {
+        command += ` -filter:a "atempo=${deduplicationConfig.speedFactor}"`;
+    }
+
+    // 输出文件
+    command += ` -y "${outputPath}"`;
+
+    try {
+        // 执行单个 ffmpeg 命令
+        await execPromise(command);
+        console.log('视频处理完成');
+
+        // 替换原文件
+        await fsPromises.rename(outputPath, filePath);
+        console.log(`最终处理后的文件: ${filePath}`);
+
+    } catch (error) {
+        console.error('处理视频时出错:', error);
+        // 清理临时文件
+        if (fs.existsSync(outputPath)) {
+            await fsPromises.unlink(outputPath);
+        }
+        throw error;
+    }
 }
 
 // 导出模块
 module.exports = {
     deduplicateVideo,
-    // 更新默认配置
     defaultDeduplicationConfig: {
         speedFactor: 0.95,
         enableMirror: false,
@@ -296,9 +257,9 @@ module.exports = {
         blurRadius: 0.1,
         enableFade: false,
         fadeDuration: 0.5,
-        brightness: 0,        // 更新默认值
-        contrast: 1,          // 更新默认值
-        saturation: 1,        // 更新默认值
+        brightness: 0,
+        contrast: 1,
+        saturation: 1,
         enableBgBlur: false,
         bgBlurTop: 0.1,
         bgBlurBottom: 0.1
