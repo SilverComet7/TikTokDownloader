@@ -6,7 +6,7 @@ const fsPromises = fs.promises;
 const execPromise = util.promisify(exec);
 const { deduplicateVideo } = require('./videoTransformDeduplication.js');
 
-// 格式化成为 YYYY-MM-DD 的字符串
+// 格式化成为 YYYY-MM-DD HH:mm:ss 的字符串
 const formatDate = () => {
   const date = new Date();
   return (
@@ -36,9 +36,6 @@ if (fs.existsSync(mapFilePath)) {
 // 瓜分奖励查看人数计算性价比
 // 爆款视频重复投递策略   title+封面+投稿时间点+Tag
 let w_h = "_9_16";
-
-
-
 
 async function runFFmpegCommand(command) {
   try {
@@ -170,10 +167,7 @@ async function processVideo(filePath, basicVideoInfoObj,
     fs.mkdirSync(newFolderYiFaPath);
     fs.mkdirSync(path.join(newVideoFolderPath, `/合集`));
   }
-
-
-
-
+  
   async function deleteTempFile(mergeVideoInfoObj) {
     if (fs.existsSync(fileListPath)) await fsPromises.unlink(fileListPath);
 
