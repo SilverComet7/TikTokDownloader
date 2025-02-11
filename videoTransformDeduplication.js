@@ -40,7 +40,6 @@ async function modifyResolutionAndFrameRate(inputFilePath, outputFilePath, scale
     }
 }
 
-// 添加去重配置接口
 async function deduplicateVideo(filePath, deduplicationConfig = {
     speedFactor: 0.95,
     enableMirror: false,

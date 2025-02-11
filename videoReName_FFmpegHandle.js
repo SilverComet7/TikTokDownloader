@@ -14,11 +14,7 @@ const formatDate = () => {
   );
 };
 
-
-
 const scriptDir = path.dirname(__filename);
-// return;
-// 映射图谱
 const mapName = "reNameMap.json";
 let fileNameMap = {};
 const mapFilePath = path.join(scriptDir, "gameList/" + mapName);
@@ -30,7 +26,6 @@ if (fs.existsSync(mapFilePath)) {
     fileNameMap = {};
   }
 }
-
 
 
 // 瓜分奖励查看人数计算性价比
@@ -89,7 +84,8 @@ async function processVideo(filePath, basicVideoInfoObj,
     musicFilePath,
     videoFolderPath,
     newVideoFolderPath,
-    newFolderYiFaPath
+    newFolderYiFaPath,
+    newOriginalFolderPath
   } = pathInfoObj
 
 
@@ -102,8 +98,6 @@ async function processVideo(filePath, basicVideoInfoObj,
   let publishTime = ''
   if (originFileName.includes("#")) {
     publishTime =  fileSplit.slice(-3).join('-')
-    console.log(fileSplit.slice(-3),publishTime);
-    
     fileName = originFileName.split("#")[0];
     fileName = fileName.split("-")[1];
     if (fileName == "") {
@@ -118,10 +112,10 @@ async function processVideo(filePath, basicVideoInfoObj,
   } else {
     fileName = originFileName
   }
-  let tempFileName = groupName === '攻略' ? fileName : fileName + '_' + publishTime;
+  fileName = groupName === '攻略' ? fileName : fileName + '_' + publishTime;
 
   if (checkName) {
-    return console.log(tempFileName);
+    return console.log(fileName);
   }
   if (onlyRename) {
     const finalGameVideoScrPath = path.join(videoFolderPath, `/已重命名处理`)
@@ -132,26 +126,25 @@ async function processVideo(filePath, basicVideoInfoObj,
       fs.mkdirSync(finalGameVideoScrYiFaPath);
     }
 
-    // 如果重命名后（部分作者不标标题）存在同名文件，先替换一下tempFileName
-    const finalGameVideoPath = path.join(videoFolderPath, `/已重命名处理/${tempFileName}${fileExt}`)
+    const finalGameVideoPath = path.join(videoFolderPath, `/已重命名处理/${fileName}${fileExt}`)
     fs.renameSync(filePath, finalGameVideoPath);
-    fileNameMap[originFileName] = tempFileName;
+    fileNameMap[originFileName] = fileName;
     return;
   }
 
   const videoTempPath = path.join(
     videoFolderPath,
-    `${tempFileName}_temp${fileExt}`
+    `${fileName}_temp${fileExt}`
   );
 
   const finalNoMusicVideoPath = path.join(
     videoFolderPath,
-    `${tempFileName}_final${fileExt}`
+    `${fileName}_final${fileExt}`
   );
-  const fileListPath = path.join(videoFolderPath, `${tempFileName}_filelist.txt`);
+  const fileListPath = path.join(videoFolderPath, `${fileName}_filelist.txt`);
   const gameFileListPath = path.join(
     videoFolderPath,
-    `${tempFileName}_game_filelist.txt`
+    `${fileName}_game_filelist.txt`
   );
 
 
@@ -170,13 +163,17 @@ async function processVideo(filePath, basicVideoInfoObj,
   if (!fs.existsSync(newVideoFolderPath)) {
     fs.mkdirSync(newVideoFolderPath);
     fs.mkdirSync(newFolderYiFaPath);
-    fs.mkdirSync(path.join(newVideoFolderPath, `/合集`));
+    fs.mkdirSync(path.join(newVideoFolderPath, `/合集`)); // N s 合集文件夹
   }
+
+  if (!fs.existsSync(newOriginalFolderPath)) {
+    fs.mkdirSync(newOriginalFolderPath);
+  }
+
+  
   
   async function deleteTempFile(mergeVideoInfoObj) {
     if (fs.existsSync(fileListPath)) await fsPromises.unlink(fileListPath);
-
-
     if (fs.existsSync(finalNoMusicVideoPath))
       await fsPromises.unlink(finalNoMusicVideoPath);
     if (fs.existsSync(gameFileListPath))
@@ -213,8 +210,6 @@ async function processVideo(filePath, basicVideoInfoObj,
     command2 = `ffmpeg -ss ${beforeTime}   -i "${filePath}"  -r ${fps} -vf "${scale}" -c:v libx264 -c:a aac "${videoTempPath}"`;
   }
   await runFFmpegCommand(command2);
-
-
   // 只在mergeVideoInfoObj存在时执行合并相关操作
   if (mergeVideoInfoObj) {
     const videoTrueDuration = (videoParams.duration - beforeTime);
@@ -241,7 +236,7 @@ async function processVideo(filePath, basicVideoInfoObj,
   const filelistContentTest = `file '${videoTempPath}'\nfile '${endingFilePath}'`;
   fs.writeFileSync(fileListPath, filelistContentTest);
 
-  const finalVideoPath = path.join(newVideoFolderPath, `${tempFileName}${fileExt}`);
+  const finalVideoPath = path.join(newVideoFolderPath, `${fileName}${fileExt}`);
   // 步骤4：合并视频和默认片尾
   let command3 = ''
   if (replaceMusic) {
@@ -253,23 +248,19 @@ async function processVideo(filePath, basicVideoInfoObj,
     command3 = `ffmpeg -f concat -safe 0 -i "${fileListPath}" -c copy "${finalVideoPath}"`;
     await runFFmpegCommand(command3);
   }
-
   
 
   if (fileName !== originFileName) {
+
     const originNewFilePath = path.join(
-      newVideoFolderPath,
+      newOriginalFolderPath,
       `${originFileName}${fileExt}`
     );
-    fs.renameSync(filePath, originNewFilePath); // coser 不移动原始文件，方便后续重复制作爆款
+    fs.renameSync(filePath, originNewFilePath); 
     fileNameMap[originFileName] = fileName;
   }
 
-
-
   return await deleteTempFile(mergeVideoInfoObj);
-
-
 
 }
 
@@ -312,20 +303,19 @@ async function ffmpegHandleVideos(basicVideoInfoObj = {
   }
 
   const musicFilePath = path.join(scriptDir, `./素材/music/${musicName}.mp3`); // 音乐文件路径,优先foldPath下的music文件夹，其次读取根目录下的素材/music文件夹里的随机mp3文件
-  const foldPath = `${gameName}/${groupName}`;
-  const videoFolderPath = path.join(scriptDir, `gameList/${foldPath}`);
-  const newVideoFolderPath = path.join(videoFolderPath, formatDate() + `_截取${beforeTime}秒后_${replaceMusic ? `音乐=${musicName}` : ''}缩放${scalePercent}%_合集时间大于${mergeVideoInfoObj.mergedLimitTime}_帧数=${fps}`);
-  const newFolderYiFaPath = path.join(newVideoFolderPath + '/已发'); // 默认在日期下生成已发文件夹，抽查播放完成后放进去, 识别
+  const foldPathName = `${gameName}/${groupName}`;
 
+  const videoFolderPath = path.join(scriptDir, `gameList/${foldPathName}`);
+  const newVideoFolderPath = path.join(videoFolderPath, formatDate() + `_截取${beforeTime}秒后_${replaceMusic ? `音乐=${musicName}` : ''}缩放${scalePercent}%_合集时间大于${mergeVideoInfoObj.mergedLimitTime}_帧数=${fps}`);
+  const newOriginalFolderPath = path.join(videoFolderPath + '/已处理'); 
+  const newFolderYiFaPath = path.join(newVideoFolderPath + '/已发'); // 默认在日期下生成已发文件夹，抽查播放完成后放进去, 识别
   const pathInfoObj = {
     musicFilePath,
-    foldPath,
     videoFolderPath,
     newVideoFolderPath,
-    newFolderYiFaPath
+    newFolderYiFaPath,
+    newOriginalFolderPath
   }
-
-
   try {
     const files = await fsPromises.readdir(videoFolderPath);
     const videoPromises = [];
