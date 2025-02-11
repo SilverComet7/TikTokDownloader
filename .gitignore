@@ -4,6 +4,7 @@
 *.xlsx
 *.csv
 *.spec
+# gameList/*.mp4
 *.mp4
 node_modules
 *.jpeg

@@ -139,22 +139,16 @@ async function processVideo(filePath, basicVideoInfoObj,
     return;
   }
 
-
   const videoTempPath = path.join(
     videoFolderPath,
     `${tempFileName}_temp${fileExt}`
   );
-
 
   const finalNoMusicVideoPath = path.join(
     videoFolderPath,
     `${tempFileName}_final${fileExt}`
   );
   const fileListPath = path.join(videoFolderPath, `${tempFileName}_filelist.txt`);
-  const gameVideoPath = path.join(
-    videoFolderPath,
-    `${tempFileName}_game${fileExt}`
-  );
   const gameFileListPath = path.join(
     videoFolderPath,
     `${tempFileName}_game_filelist.txt`
@@ -162,6 +156,17 @@ async function processVideo(filePath, basicVideoInfoObj,
 
 
   //  剩下都是非攻略  coser转换的
+
+
+  if (deduplicationConfig && deduplicationConfig.enable && Object.keys(deduplicationConfig).length > 0) {
+    try {
+      await deduplicateVideo(filePath, deduplicationConfig);
+      console.log(`视频去重处理完成: ${filePath}`);
+    } catch (error) {
+      console.error(`视频去重处理失败: ${error.message}`);
+    }
+  }
+
   if (!fs.existsSync(newVideoFolderPath)) {
     fs.mkdirSync(newVideoFolderPath);
     fs.mkdirSync(newFolderYiFaPath);
@@ -174,7 +179,6 @@ async function processVideo(filePath, basicVideoInfoObj,
 
     if (fs.existsSync(finalNoMusicVideoPath))
       await fsPromises.unlink(finalNoMusicVideoPath);
-    if (fs.existsSync(gameVideoPath)) await fsPromises.unlink(gameVideoPath);
     if (fs.existsSync(gameFileListPath))
       await fsPromises.unlink(gameFileListPath);
     if (
@@ -250,15 +254,7 @@ async function processVideo(filePath, basicVideoInfoObj,
     await runFFmpegCommand(command3);
   }
 
-  // 在处理完基本的视频操作后，如果有去重配置则进行去重处理
-  if (deduplicationConfig && deduplicationConfig.enable && Object.keys(deduplicationConfig).length > 0) {
-    try {
-      await deduplicateVideo(finalVideoPath, deduplicationConfig);
-      console.log(`视频去重处理完成: ${finalVideoPath}`);
-    } catch (error) {
-      console.error(`视频去重处理失败: ${error.message}`);
-    }
-  }
+  
 
   if (fileName !== originFileName) {
     const originNewFilePath = path.join(
@@ -275,32 +271,6 @@ async function processVideo(filePath, basicVideoInfoObj,
 
 
 
-  // 新的CG处理逻辑：生成 > n秒的视频，原视频 + 游戏随机片段 
-  const gameFragmentFilePath = path.join(scriptDir, `./gameFragment${w_h}.mp4`); // 游戏片段文件路径
-  const randomStartTime = Math.floor(Math.random() * 120 + 5); //
-  // 步骤1：截取游戏片段的随机24秒
-  const command4 = `ffmpeg  -ss ${randomStartTime}  -i "${gameFragmentFilePath}"   -t 24 -c:v copy -an "${gameVideoPath}"`;
-  await runFFmpegCommand(command4);
-  // 步骤2：生成 game_filelist.txt 等待合并文件
-  const gameFilelistContent = `file '${videoTempPath}'\nfile '${gameVideoPath}'`;
-  fs.writeFileSync(gameFileListPath, gameFilelistContent);
-  // 步骤3：合并视频和游戏片段并静音（方便后续合并音频）
-  const command5 = `ffmpeg -f concat -safe 0 -i "${gameFileListPath}" -c copy -an "${finalNoMusicVideoPath.replace(
-    "_final",
-    "_game_final"
-  )}"`;
-  await runFFmpegCommand(command5);
-  // 合并音频
-  const command5t = `ffmpeg -i "${finalNoMusicVideoPath.replace(
-    "_final",
-    "_game_final"
-  )}" -i "${musicFilePath}" -c:v copy -map 0:v:0 -map 1:a:0 -shortest "${finalNoMusicVideoPath.replace(
-    "_final",
-    "_game_final_music"
-  )}"`;
-  await runFFmpegCommand(command5t);
-  await deleteTempFile();
-  return;
 }
 
 
