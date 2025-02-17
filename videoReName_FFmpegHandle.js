@@ -66,7 +66,6 @@ async function getVideoParams(filePath) {
 async function processVideo(filePath, basicVideoInfoObj,
   pathInfoObj, mergeVideoInfoObj) {
 
-
   let {
     onlyRename,
     checkName,
@@ -76,7 +75,8 @@ async function processVideo(filePath, basicVideoInfoObj,
     replaceMusic,
     gameName,
     groupName,
-    deduplicationConfig
+    deduplicationConfig,
+    addPublishTime
   } = basicVideoInfoObj;
   scalePercent = scalePercent / 100;
 
@@ -88,16 +88,17 @@ async function processVideo(filePath, basicVideoInfoObj,
     newOriginalFolderPath
   } = pathInfoObj
 
-
   const fileExt = path.extname(filePath);
   let originFileName = path.basename(filePath, path.extname(filePath));
-  // 如果文件名包含#
+
+  // nickName desc publishTime 格式的重命名
+  
   let fileName = ''
   const fileSplit = originFileName.split("-")
   let nickName = fileSplit[0];
   let publishTime = ''
   if (originFileName.includes("#")) {
-    publishTime =  fileSplit.slice(-3).join('-')
+    publishTime = fileSplit.slice(-3).join('-')
     fileName = originFileName.split("#")[0];
     fileName = fileName.split("-")[1];
     if (fileName == "") {
@@ -107,16 +108,26 @@ async function processVideo(filePath, basicVideoInfoObj,
       // TODO 接入deepSeek AI改名，生成新的爆款自媒体标题
 
     }
-    // 如果取出desc描述不包含游戏名则最前面添加游戏名
     if (!fileName?.includes(gameName) && groupName === '攻略') fileName = `${fileName}~${gameName}`
   } else {
     fileName = originFileName
   }
-  fileName = groupName === '攻略' ? fileName : fileName + '_' + publishTime;
+
+  if (addPublishTime && publishTime) {
+    fileName = fileName + '_' + publishTime;
+  }
+
+  // desc 格式的重命名
+
+
+
 
   if (checkName) {
     return console.log(fileName);
   }
+
+  
+
   if (onlyRename) {
     const finalGameVideoScrPath = path.join(videoFolderPath, `/已重命名处理`)
     const finalGameVideoScrYiFaPath = path.join(videoFolderPath, `/已重命名处理/已发`)
@@ -132,11 +143,11 @@ async function processVideo(filePath, basicVideoInfoObj,
     return;
   }
 
+  //  剩下都是非攻略  coser转换的
   const videoTempPath = path.join(
     videoFolderPath,
     `${fileName}_temp${fileExt}`
   );
-
   const finalNoMusicVideoPath = path.join(
     videoFolderPath,
     `${fileName}_final${fileExt}`
@@ -146,9 +157,6 @@ async function processVideo(filePath, basicVideoInfoObj,
     videoFolderPath,
     `${fileName}_game_filelist.txt`
   );
-
-
-  //  剩下都是非攻略  coser转换的
 
 
   if (deduplicationConfig && deduplicationConfig.enable && Object.keys(deduplicationConfig).length > 0) {
@@ -170,8 +178,6 @@ async function processVideo(filePath, basicVideoInfoObj,
     fs.mkdirSync(newOriginalFolderPath);
   }
 
-  
-  
   async function deleteTempFile(mergeVideoInfoObj) {
     if (fs.existsSync(fileListPath)) await fsPromises.unlink(fileListPath);
     if (fs.existsSync(finalNoMusicVideoPath))
@@ -248,15 +254,14 @@ async function processVideo(filePath, basicVideoInfoObj,
     command3 = `ffmpeg -f concat -safe 0 -i "${fileListPath}" -c copy "${finalVideoPath}"`;
     await runFFmpegCommand(command3);
   }
-  
+
 
   if (fileName !== originFileName) {
-
     const originNewFilePath = path.join(
       newOriginalFolderPath,
       `${originFileName}${fileExt}`
     );
-    fs.renameSync(filePath, originNewFilePath); 
+    fs.renameSync(filePath, originNewFilePath);
     fileNameMap[originFileName] = fileName;
   }
 
@@ -276,8 +281,10 @@ async function ffmpegHandleVideos(basicVideoInfoObj = {
   groupName: 'coser本人',
   onlyRename: false,
   deduplicationConfig: null,
-  enableMerge: false,     // 新增：是否启用合并
-  mergedLimitTime: 20     // 新增：合并时长限制
+  enableMerge: false,     
+  mergedLimitTime: 20,
+  addPublishTime: false,  // 新增：是否添加发布时间参数
+  videoDir: ''           
 }) {
   let {
     checkName,
@@ -289,12 +296,14 @@ async function ffmpegHandleVideos(basicVideoInfoObj = {
     gameName,
     groupName,
     enableMerge,
-    mergedLimitTime
+    mergedLimitTime,
+    addPublishTime,     // 新增：解构发布时间参数
+    videoDir            
   } = basicVideoInfoObj;
 
   // 初始化合并视频信息对象
   const mergeVideoInfoObj = {
-    mergedLimitTime: mergedLimitTime || 20,
+    mergedLimitTime: mergedLimitTime || 30,
     videoIndex: 0,
     totalDuration: 0,
     fileStr: '',
@@ -303,11 +312,11 @@ async function ffmpegHandleVideos(basicVideoInfoObj = {
   }
 
   const musicFilePath = path.join(scriptDir, `./素材/music/${musicName}.mp3`); // 音乐文件路径,优先foldPath下的music文件夹，其次读取根目录下的素材/music文件夹里的随机mp3文件
-  const foldPathName = `${gameName}/${groupName}`;
+  const foldPathName = `gameList/${gameName}/${groupName}`;
+  const videoFolderPath = videoDir || path.join(scriptDir, `${foldPathName}`);
 
-  const videoFolderPath = path.join(scriptDir, `gameList/${foldPathName}`);
   const newVideoFolderPath = path.join(videoFolderPath, formatDate() + `_截取${beforeTime}秒后_${replaceMusic ? `音乐=${musicName}` : ''}缩放${scalePercent}%_合集时间大于${mergeVideoInfoObj.mergedLimitTime}_帧数=${fps}`);
-  const newOriginalFolderPath = path.join(videoFolderPath + '/已处理'); 
+  const newOriginalFolderPath = path.join(videoFolderPath + '/已处理');
   const newFolderYiFaPath = path.join(newVideoFolderPath + '/已发'); // 默认在日期下生成已发文件夹，抽查播放完成后放进去, 识别
   const pathInfoObj = {
     musicFilePath,
@@ -361,19 +370,6 @@ async function ffmpegHandleVideos(basicVideoInfoObj = {
   }
 }
 
-// ffmpegHandleVideos({
-//     onlyRename: false,
-//     checkName: false,
-//     beforeTime: 1,
-//     fps: 30,
-//     scalePercent: 0,
-//     replaceMusic: false, //  合集是否替换音乐
-//     musicName: 'billll', //  coser必定替换音乐 ?
-//     gameName: '航海王壮志雄心', //   
-//     groupName: 'coser同行',  //   
-// }).catch((err) => {
-//     console.error("主程序执行出错: " + err);
-// });
 
 module.exports = {
   ffmpegHandleVideos

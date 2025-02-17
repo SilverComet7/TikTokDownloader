@@ -18,6 +18,9 @@ async function downloadVideosAndGroup({
 
   earliest,    // 统一下载的最早时间,为空字符串则没有日期限制下载全部作品,活动起始时间
 
+  strategy = 'group', // 新增策略参数
+  keyword = '',       // 新增关键词参数
+  filePath = ''       // 新增文件路径参数
 }) {
 
   try {
@@ -30,8 +33,6 @@ async function downloadVideosAndGroup({
     let oldSettings = JSON.parse(oldSettingsData);
     let oldAccountsUrls = oldSettings.accounts_urls;
 
-
-
     if (isDownload) {
       accountsUrls = accountsUrls.map(acc => {
         if (currentUpdateGameList.includes(acc.game)) {
@@ -39,7 +40,7 @@ async function downloadVideosAndGroup({
         } else {
           acc.enable = false;
         }
-        // 对比新旧数据,将新增的 name 启用,其它都禁用
+        // 对比新旧数据, 避免多次下载
         if (checkNewAdd) {
           const oldAcc = oldAccountsUrls.find(oldAcc => oldAcc.name === acc.name);
           if (oldAcc) {
@@ -48,13 +49,15 @@ async function downloadVideosAndGroup({
             acc.enable = true;
           }
         }
+        // 如果开启全部下载，则全部启用
         if (allDownload) acc.enable = true;
         if (earliest || earliest == '') acc.earliest = earliest
         return acc;
       });
-      settings.run_command = '6 1 1 Q'
+      if (strategy == 'group') settings.run_command = '6 1 1 Q' // 分组下载 参考TikTokDownloader
+      // if (strategy == 'keyword') settings.run_command = '6 1 1 Q' 
+      if (strategy == 'filePath') settings.run_command = '6 2 2 Q' // TODO  处理默认路径 读取特定download.txt文件路径下载  
 
-      // 更新 settings.json 文件
       await fsPromises.writeFile(settingsPath, JSON.stringify(settings, null, 2), "utf8");
       console.log("settings.json 更新完成");
 
@@ -68,6 +71,7 @@ async function downloadVideosAndGroup({
 
         try {
           console.log(`Python 脚本开始执行: `);
+          // todo  可视化输出
           const outputBuffer = execSync(`${pythonExecutable} ${pythonScriptPath}`, { encoding: 'utf8' });
           // const output = iconv.decode(outputBuffer, 'gbk'); // 假设 Python 脚本输出使用 GBK 编码
           console.log(`Python 脚本标准输出: ${outputBuffer}`);
@@ -170,21 +174,6 @@ async function downloadVideosAndGroup({
     console.error('读取或解析settings.json文件时出错:', err);
   }
 }
-
-// downloadVideosAndGroup({
-//   isDownload: true,    // 是否下载视频,  false 则只进行mp4文件分组
-
-//   checkNewAdd: true,    // 检测新旧文件对比，只下载新增的文件,避免下载量太大
-
-//   allDownload: false,    // 是否开启setting.json中全部视频的下载
-
-//   checkName: false, // 检测debugger
-
-//   currentUpdateGameList: ["火影忍者"],    // 控制哪些game下载
-
-//   earliest: '2024/9/19',    // 统一下载的最早时间,为空字符串则没有日期限制下载全部作品,活动起始时间
-
-// })
 
 module.exports = {
   downloadVideosAndGroup

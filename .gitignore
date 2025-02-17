@@ -14,3 +14,7 @@ node_modules
 *.mp3
 *.mov
 *.txt
+
+# 忽略旧的设置文件
+oldSettings.json
+settings.json
