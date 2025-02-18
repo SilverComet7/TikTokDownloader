@@ -1,7 +1,7 @@
 const fs = require('fs');
 const fsPromises = require('fs').promises;
 const path = require('path');
-const { execSync } = require('child_process');
+const { spawn } = require('child_process');
 const { allGameList } = require('../allGameNameList.js')
 
 
@@ -71,10 +71,50 @@ async function downloadVideosAndGroup({
 
         try {
           console.log(`Python 脚本开始执行: `);
-          // todo  可视化输出
-          const outputBuffer = execSync(`${pythonExecutable} ${pythonScriptPath}`, { encoding: 'utf8' });
-          // const output = iconv.decode(outputBuffer, 'gbk'); // 假设 Python 脚本输出使用 GBK 编码
-          console.log(`Python 脚本标准输出: ${outputBuffer}`);
+          
+          // 使用Promise包装spawn进程
+          await new Promise((resolve, reject) => {
+            const pythonProcess = spawn(pythonExecutable, [pythonScriptPath], {
+              shell: true,
+              env: {
+                PYTHONUTF8: '1',  // 强制Python使用UTF-8编码
+                PYTHONIOENCODING: 'utf-8'  // 设置输入输出编码
+              }
+            });
+
+            // 实时监听标准输出
+            pythonProcess.stdout.on('data', (data) => {
+              const output = data.toString('utf8', {
+                stripBOM: true,
+                replacementChar: ''
+              });
+              console.log(`[Python stdout]: ${output}`);
+            });
+
+            // 实时监听错误输出
+            pythonProcess.stderr.on('data', (data) => {
+              const errorOutput = data.toString('utf8', {
+                stripBOM: true,
+                replacementChar: ''
+              });
+              console.error(`[Python stderr]: ${errorOutput}`);
+            });
+
+            // 进程结束处理
+            pythonProcess.on('exit', (code) => {
+              if (code === 0) {
+                console.log('Python脚本执行成功');
+                resolve();
+              } else {
+                reject(new Error(`Python脚本执行失败，退出码: ${code}`));
+              }
+            });
+
+            // 错误处理
+            pythonProcess.on('error', (err) => {
+              reject(new Error(`启动Python脚本失败: ${err.message}`));
+            });
+          });
 
           // 更新下载了的日期为当前日期 XXXX/XX/XX
           const currentDate = new Date().toLocaleDateString();
