@@ -3,6 +3,7 @@ from rich.console import Console
 from src.custom import (
     DATA_HEADERS,
     DATA_HEADERS_TIKTOK,
+    DOWNLOAD_HEADERS_TIKTOK,
 )
 from src.encrypt import ABogus
 from src.encrypt import XBogus
@@ -16,7 +17,9 @@ class Params:
         self.cookie_tiktok = "自行填入 TikTok Cookie"
         self.headers = DATA_HEADERS | {"Cookie": self.cookie}
         self.headers_tiktok = DATA_HEADERS_TIKTOK | {
-            "Cookie": self.cookie_tiktok}
+            "Cookie": self.cookie_tiktok,
+        }
+        self.headers_download = DOWNLOAD_HEADERS_TIKTOK
         self.logger = Logger()
         self.ab = ABogus()
         self.xb = XBogus()
@@ -24,9 +27,13 @@ class Params:
         self.max_retry = 0
         self.timeout = 5
         self.max_pages = 2
-        self.client = create_client(timeout=self.timeout, )
+        self.client = create_client(
+            timeout=self.timeout,
+        )
         self.client_tiktok = create_client(
-            timeout=self.timeout, proxy="http://127.0.0.1:10809", )
+            timeout=self.timeout,
+            proxy="http://127.0.0.1:10809",
+        )
 
     async def __aenter__(self):
         return self
