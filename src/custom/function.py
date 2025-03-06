@@ -41,8 +41,8 @@ def condition_filter(data: dict) -> bool:
 
     duration_str = data["duration"]
     duration = datetime.strptime(duration_str, '%H:%M:%S') - datetime.strptime('00:00:00', '%H:%M:%S')
-    # 大于三分钟的视频不下载 (避免时间太长)
-    if int(duration.total_seconds()) > 180: 
+    # 大于5分钟的视频不下载 (避免时间太长)
+    if int(duration.total_seconds()) > 300: 
         return False
     # 点赞小于50的不下载
     if int(data["digg_count"]) < 50: 
