@@ -7,6 +7,7 @@ from types import SimpleNamespace
 from typing import Callable
 from typing import TYPE_CHECKING
 from typing import Union
+import os
 
 from pydantic import ValidationError
 
@@ -1582,6 +1583,21 @@ class TikTok:
             await self._deal_user_data([i for i in users if i])
 
     def txt_inquire(self) -> str:
+        # 优先从环境变量获取路径
+        if download_path := os.environ.get('download_path'):
+            if (t := Path(download_path.replace('"', ""))).is_file():
+                try:
+                    with t.open("r", encoding=self.ENCODE) as f:
+                        return f.read()
+                except UnicodeEncodeError as e:
+                    self.logger.warning(
+                        _("{path} 文件读取异常: {error}").format(path=download_path, error=e)
+                    )
+            else:
+                self.console.print(_("{path} 文件不存在！").format(path=download_path))
+                return ""
+        
+        # 如果环境变量中没有路径,则使用原有的交互式输入
         if path := self.console.input(_("请输入文本文档路径：")):
             if (t := Path(path.replace('"', ""))).is_file():
                 try:
